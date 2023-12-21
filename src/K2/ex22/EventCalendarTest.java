@@ -3,7 +3,6 @@ package K2.ex22;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.time.LocalDate;
 import java.util.*;
 
 public class EventCalendarTest {
@@ -85,7 +84,7 @@ class EventCalendar {
         if (year != Integer.parseInt(formatter.format(date))) {
             throw new WrongDateException(date);
         }
-        events.putIfAbsent(date, new TreeSet<>(Comparator.comparing(Event::getDate).thenComparing(Event::getName).thenComparing(Event::getLocation)));
+        events.putIfAbsent(date, new TreeSet<>(Comparator.comparing(Event::getDate).thenComparing(Event::getName)));
         events.get(date).add(new Event(name, location, date));
     }
 
@@ -93,7 +92,7 @@ class EventCalendar {
         SimpleDateFormat formatter = new SimpleDateFormat("dd MMM");
         boolean contains = false;
         for (Date dates : events.keySet()) {
-            if (formatter.format(date).equals(formatter.format(dates))){
+            if (formatter.format(date).equals(formatter.format(dates))) {
                 events.get(dates).forEach(System.out::println);
                 contains = true;
             }
@@ -104,22 +103,14 @@ class EventCalendar {
     }
 
     public void listByMonth() {
-        HashMap<Integer, Integer> byMonth = new HashMap<>();
-        for (int i = 1; i <= 12; i++) {
-            byMonth.put(i, 0);
+        int[] monthCount = new int[12];
+        SimpleDateFormat monthFormat = new SimpleDateFormat("MM");
+        for (Date date : events.keySet()) {
+            int month = Integer.parseInt(monthFormat.format(date)) - 1;
+            monthCount[month] += events.get(date).size();
         }
-        events.keySet().stream().forEach(date -> {
-            SimpleDateFormat formatter = new SimpleDateFormat("M");
-            Integer month = Integer.parseInt(formatter.format(date));
-            int value = byMonth.get(month);
-            byMonth.put(month, 1+value);
-        });
-
-        for (int i: byMonth.keySet()) {
-            System.out.println(i + " : " + byMonth.get(i));
+        for (int i = 0; i < 12; i++) {
+            System.out.println((i + 1) + " : " + monthCount[i]);
         }
-
-        System.out.println();
-        System.out.println(events.values().size());
     }
 }
