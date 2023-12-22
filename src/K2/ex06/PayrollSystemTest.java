@@ -1,4 +1,4 @@
-package K2.ex6;
+package K2.ex06;
 
 import java.io.InputStream;
 import java.io.PrintStream;

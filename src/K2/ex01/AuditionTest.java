@@ -1,4 +1,4 @@
-package K2.ex1;
+package K2.ex01;
 
 import java.util.*;
 
