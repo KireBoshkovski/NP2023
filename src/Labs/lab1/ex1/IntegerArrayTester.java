@@ -123,7 +123,7 @@ public class IntegerArrayTester {
 
 
 final class IntegerArray {
-    private int[] a;
+    private final int[] a;
 
     IntegerArray(int[] a) {
         this.a = a.clone();
