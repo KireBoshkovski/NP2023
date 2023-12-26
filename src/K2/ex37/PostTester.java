@@ -42,7 +42,7 @@ class Comment {
     private final String commentId;
     private final String content;
     private int likes;
-    private List<Comment> replies;
+    private final List<Comment> replies;
 
     public Comment(String author, String commendId, String content) {
         this.author = author;
