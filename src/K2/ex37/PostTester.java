@@ -1,8 +1,6 @@
-package K2.ex37;
+ package K2.ex37;
 
 import java.util.*;
-import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 
 
 public class PostTester {
@@ -40,91 +38,112 @@ public class PostTester {
 }
 
 class Comment {
-    private String username;
-    private String id;
-    private String content;
-    private ArrayList<Comment> replies;
+    private final String author;
+    private final String commentId;
+    private final String content;
     private int likes;
+    private List<Comment> replies;
 
-    public Comment(String username, String id, String content) {
-        this.id = id;
-        this.username = username;
+    public Comment(String author, String commendId, String content) {
+        this.author = author;
+        this.commentId = commendId;
         this.content = content;
-        this.replies = new ArrayList<>();
         this.likes = 0;
+        this.replies = new ArrayList<>();
     }
 
-    public void addReply(Comment reply){
-        this.replies.add(reply);
+    public void addComment(Comment comment) {
+        replies.add(comment);
     }
 
-    public void addLike(){
+    public String getCommentId() {
+        return commentId;
+    }
+
+    public List<Comment> getReplies() {
+        return replies;
+    }
+
+    public int getLikes() {
+        int c = likes;
+        for (Comment reply : replies) {
+            c += reply.getLikes();
+        }
+        return c;
+    }
+
+    public void like() {
         likes++;
     }
 
-    public int getLikes(){
-        int total = this.likes;
-
-        for (Comment reply : this.replies){
-            total += reply.getLikes();
-        }
-
-        return total;
-    }
-
-    @Override
-    public String toString() {
+    public String display(int indent) {
         StringBuilder sb = new StringBuilder();
-        sb.append("        Comment: ").append(this.content).append("\n");
-        sb.append("        Written by: ").append(this.username).append("\n");
-        sb.append("        Likes: ").append(this.getLikes()).append("\n");
-        for (Comment reply : this.replies) {
-            sb.append(reply.toString()).append("\n");
+        sb.append("    ".repeat(Math.max(0, indent)));
+        sb.append("Comment: ").append(content).append("\n");
+        sb.append("    ".repeat(Math.max(0, indent)));
+        sb.append("Written by: ").append(author).append("\n");
+        sb.append("    ".repeat(Math.max(0, indent)));
+        sb.append("Likes: ").append(likes).append("\n");
+
+        replies.sort(Comparator.comparing(Comment::getLikes).reversed());
+        for (Comment reply : replies) {
+            sb.append(reply.display(indent + 1));
         }
+
         return sb.toString();
     }
 }
 
-class Post{
-    private String username;
-    private String postContent;
-    private Map<String, Comment> comments;
-    public Post(String username, String postContent) {
-        this.username = username;
-        this.postContent = postContent;
-        this.comments = new HashMap<>();
+class Post {
+    private final String author;
+    private final String content;
+    private final List<Comment> comments;
+
+    public Post(String author, String content) {
+        this.author = author;
+        this.content = content;
+        this.comments = new ArrayList<>();
     }
 
-    public void addComment(String username, String commentId, String content, String replyToId){
-        Comment comment = new Comment(username, commentId, content);
-        if(replyToId == null){
-            this.comments.put(commentId, comment);
+    public void addComment(String author, String id, String content, String replyToId) {
+        Comment comment = new Comment(author, id, content);
+        if (replyToId == null) {
+            comments.add(comment);
         } else {
-            Comment parent = comments.get(replyToId);
+            Comment parent = findCommentById(comments, replyToId);
             if (parent != null) {
-                parent.addReply(comment);
+                parent.addComment(comment);
             }
         }
     }
 
-    public void likeComment(String commentId){
-        Comment comment = this.comments.get(commentId);
-        if(comment != null){
-            comment.addLike();
+    public void likeComment(String commentId) {
+        Comment comment = findCommentById(comments, commentId);
+        if (comment != null) {
+            comment.like();
         }
     }
 
     @Override
     public String toString() {
-        StringBuilder sb = new StringBuilder();
-        sb.append("Post: ").append(this.postContent).append("\n");
-        sb.append("Written by: ").append(this.username).append("\n");
-        sb.append("Comments:\n");
-        List<Comment> sortedComments = new ArrayList<>(this.comments.values());
-        sortedComments.sort((c1, c2) -> Integer.compare(c2.getLikes(), c1.getLikes()));
-        for (Comment comment : sortedComments) {
-            sb.append(comment.toString());
+        StringBuilder sb = new StringBuilder(String.format("Post: %s\nWritten by: %s\nComments:\n", content, author));
+        comments.sort(Comparator.comparing(Comment::getLikes).reversed());
+        for (Comment comment : comments) {
+            sb.append(comment.display(2));
         }
         return sb.toString();
+    }
+
+    private Comment findCommentById(List<Comment> comments, String commentId) {
+        for (Comment comment : comments) {
+            if (comment.getCommentId().equals(commentId)) {
+                return comment;
+            }
+            Comment found = findCommentById(comment.getReplies(), commentId);
+            if (found != null) {
+                return found;
+            }
+        }
+        return null;
     }
 }
